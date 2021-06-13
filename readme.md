@@ -1,4 +1,4 @@
-## better-scroll 联动 demo
+## better-scroll 菜单内容联动 demo
 
-### 演示视屏
-![视频](./readme/scroll-demo.mp4)
+### 演示
+![视频](./readme/演示gif.gif)
