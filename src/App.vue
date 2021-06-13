@@ -1,7 +1,7 @@
 <template>
   <div id="scroll-demo">
     <div class="scroll_wrapper">
-      <!-- 预览框 -->
+      <!-- 菜单区域 -->
       <div class="menu_wrapper" ref="menu_wrapper">
         <ul class="menu_list" ref="menu_list">
           <li
@@ -90,7 +90,7 @@ export default {
   mounted() {
     // 2 进行初始化滚动
     this.initScroll();
-    // 3 收集右侧食物列表各个分类的高度
+    // 3 收集左右侧列表各个分类的高度
     this.initTops();
   },
   computed: {},
@@ -107,13 +107,13 @@ export default {
       this.contentScroll = new Bscroll(".content_wrapper", {
         click: true,
         // 1:只有滚动的时候会触发scroll事件 会截流,
-        //  2:只有滚动的时候会实时的触发scroll事件 不会节流,
+        // 2:只有滚动的时候会实时的触发scroll事件 不会节流,
         // 3 滚动的时候会实时触发scroll事件,惯性滑动的时候也会触发scroll事件
         probeType: 3,
         mouseWheel: true,
         bounce: false,
       });
-      // 5.1 监听食品分类列表的滚动,得到实时滚动的位置
+      // 5.1 监听内容列表的滚动,得到实时滚动的位置
       this.contentScroll.on("scroll", ({ x, y }) => {
         const scrollY = Math.abs(y);
         this.scrollY = scrollY;
@@ -150,7 +150,7 @@ export default {
       localData.menuWrapperHeight = mw.clientHeight;
       localData.contentListHeight = cl.clientHeight;
       localData.contentWrapperHeight = cw.clientHeight;
-      // 将获得的食物列表的类数组转化为数组进行遍历获取到每个食物分类到顶部的高度
+      // 将list分类到顶部的高度
       Array.prototype.slice.call(lis).forEach((li, index) => {
         mtop += mlis[index].clientHeight;
         ctop += li.clientHeight;
@@ -161,7 +161,7 @@ export default {
       });
       this.tops = tops;
     },
-
+    // 计算index
     calcIndex(scrollY) {
       const { tops, list } = this;
       let index = 0;
@@ -191,7 +191,7 @@ export default {
        * 第一个参数:横轴方向(也就是坐标轴的x轴方向)滑动的大小
        * 第二个参数:纵轴方向(y轴方向)滑动的大小
        */
-      //y轴方向滑动的大小为对应食物分类收集的高度的负值
+      // y 轴方向滑动的大小为对应食物分类收集的高度的负值
       const bottomScrollY =
         localData.contentListHeight - localData.contentWrapperHeight;
       if (bottomScrollY > scrollY) {
