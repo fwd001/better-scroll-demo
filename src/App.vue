@@ -234,7 +234,7 @@ li {
     .menu_list {
       .menu_item {
         width: 100px;
-        height: 50px;
+        height: 150px;
         text-align: center;
         &.on {
           background-color: #f1f3f4;
@@ -253,7 +253,7 @@ li {
           padding-left: 15px;
         }
         .content_list {
-          height: 200px;
+          height: 400px;
           background-color: #eee;
         }
       }
