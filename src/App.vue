@@ -1,0 +1,263 @@
+<template>
+  <div id="scroll-demo">
+    <div class="scroll_wrapper">
+      <!-- 预览框 -->
+      <div class="menu_wrapper" ref="menu_wrapper">
+        <ul class="menu_list" ref="menu_list">
+          <li
+            class="menu_item"
+            @click="checkMenu(index)"
+            :class="{ on: index === currentIndex }"
+            v-for="(item, index) in list"
+            :key="item.key"
+          >
+            {{ item.name }}
+          </li>
+        </ul>
+      </div>
+      <!-- 内容区域 -->
+      <div class="content_wrapper" ref="contents_wrapper">
+        <ul class="contents_list" ref="contents_list">
+          <li
+            class="content_item"
+            v-for="(item, index) in list"
+            :key="item.key"
+          >
+            <h3 class="title">{{ item.name }}</h3>
+            <ul class="content_list" :style="{ backgroundColor: item.color }">
+              {{
+                item.content
+              }}
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import Bscroll from "better-scroll";
+
+// 本地非响应式数据
+let localData = {
+  // 菜单列表内容长度
+  menuListHeight: 0,
+  // 菜单列表盒子长度
+  menuWrapperHeight: 0,
+  // 内容列表长度
+  contentListHeight: 0,
+  // 内容盒子长度
+  contentWrapperHeight: 0,
+  // 点击触发
+  clickEmit: false,
+};
+
+export default {
+  data() {
+    return {
+      list: [
+        {
+          key: "key1",
+          name: "第1章",
+          content: "第1章内容",
+          color: "green",
+        },
+        {
+          key: "key2",
+          name: "第2章",
+          content: "第2章内容",
+          color: "blue",
+        },
+        {
+          key: "key3",
+          name: "第3章",
+          content: "第3章内容",
+          color: "yellow",
+        },
+        {
+          key: "key4",
+          name: "第4章",
+          content: "第4章内容",
+          color: "red",
+        },
+      ],
+      tops: [],
+      scrollY: 0,
+      currentIndex: 0,
+    };
+  },
+  mounted() {
+    // 2 进行初始化滚动
+    this.initScroll();
+    // 3 收集右侧食物列表各个分类的高度
+    this.initTops();
+  },
+  computed: {},
+  watch: {},
+  methods: {
+    initScroll() {
+      // 初始化左边菜单滚动
+      this.menuScroll = new Bscroll(".menu_wrapper", {
+        click: true,
+        mouseWheel: true,
+        bounce: false,
+      });
+      // 初始化右边内容滚动
+      this.contentScroll = new Bscroll(".content_wrapper", {
+        click: true,
+        // 1:只有滚动的时候会触发scroll事件 会截流,
+        //  2:只有滚动的时候会实时的触发scroll事件 不会节流,
+        // 3 滚动的时候会实时触发scroll事件,惯性滑动的时候也会触发scroll事件
+        probeType: 3,
+        mouseWheel: true,
+        bounce: false,
+      });
+      // 5.1 监听食品分类列表的滚动,得到实时滚动的位置
+      this.contentScroll.on("scroll", ({ x, y }) => {
+        const scrollY = Math.abs(y);
+        this.scrollY = scrollY;
+        this.calcIndex(scrollY);
+        if (localData.clickEmit === false) {
+          const my =
+            (scrollY * localData.menuListHeight) / localData.contentListHeight;
+          if (localData.menuListHeight - my > localData.menuWrapperHeight) {
+            this.menuScroll.scrollTo(0, -my, 300);
+          }
+        }
+      });
+
+      this.contentScroll.on("scrollEnd", ({ x, y }) => {
+        const scrollY = Math.abs(y);
+        localData.clickEmit = false;
+      });
+    },
+    initTops() {
+      let cl = this.$refs.contents_list;
+      let lis = cl.children;
+      let ml = this.$refs.menu_list;
+      let mlis = ml.children;
+      let mw = this.$refs.menu_wrapper;
+      let cw = this.$refs.contents_wrapper;
+      let mtop = 0;
+      let ctop = 0;
+      let tops = [];
+      tops.push({
+        m: mtop,
+        c: ctop,
+      });
+      localData.menuListHeight = ml.clientHeight;
+      localData.menuWrapperHeight = mw.clientHeight;
+      localData.contentListHeight = cl.clientHeight;
+      localData.contentWrapperHeight = cw.clientHeight;
+      // 将获得的食物列表的类数组转化为数组进行遍历获取到每个食物分类到顶部的高度
+      Array.prototype.slice.call(lis).forEach((li, index) => {
+        mtop += mlis[index].clientHeight;
+        ctop += li.clientHeight;
+        tops.push({
+          m: mtop,
+          c: ctop,
+        });
+      });
+      this.tops = tops;
+    },
+
+    calcIndex(scrollY) {
+      const { tops, list } = this;
+      let index = 0;
+      // 5.3 找到分类的下标索引,实现联动左侧列表
+      index = tops.findIndex((top, index) => {
+        return scrollY >= top.c && scrollY < tops[index + 1].c;
+      });
+
+      const bottomScrollY =
+        localData.contentListHeight - localData.contentWrapperHeight;
+      if (bottomScrollY <= scrollY) {
+        index = list.length - 1;
+      }
+
+      this.currentIndex = index;
+    },
+
+    // 4 实现左边菜单点击联动右列表
+    checkMenu(index) {
+      localData.clickEmit = true;
+      this.currentIndex = index;
+      const { tops } = this;
+      const scrollY = tops[index].c;
+      /**
+       * scrollTo
+       * 是better-scroll 模块的方法 用于滑动到指定位置
+       * 第一个参数:横轴方向(也就是坐标轴的x轴方向)滑动的大小
+       * 第二个参数:纵轴方向(y轴方向)滑动的大小
+       */
+      //y轴方向滑动的大小为对应食物分类收集的高度的负值
+      const bottomScrollY =
+        localData.contentListHeight - localData.contentWrapperHeight;
+      if (bottomScrollY > scrollY) {
+        this.contentScroll.scrollTo(0, -scrollY, 0);
+      } else {
+        this.contentScroll.scrollTo(0, -bottomScrollY, 0);
+      }
+    },
+  },
+};
+</script>
+
+<style lang="less">
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+h3 {
+  margin: 0;
+  padding: 0;
+}
+ul,
+li {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+#scroll-demo {
+  height: 100vh;
+  width: 100vw;
+}
+.scroll_wrapper {
+  background-color: #ccc;
+  display: flex;
+  height: 400px;
+  overflow: hidden;
+  .menu_wrapper {
+    width: 100px;
+    .menu_list {
+      .menu_item {
+        width: 100px;
+        height: 50px;
+        text-align: center;
+        &.on {
+          background-color: #f1f3f4;
+        }
+      }
+    }
+  }
+  .content_wrapper {
+    flex: 1;
+    .contents_list {
+      .content_item {
+        .title {
+          font-size: 16px;
+          background: #f1f3f4;
+          padding: 5px 0;
+          padding-left: 15px;
+        }
+        .content_list {
+          height: 200px;
+          background-color: #eee;
+        }
+      }
+    }
+  }
+}
+</style>
