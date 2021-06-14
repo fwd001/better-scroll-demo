@@ -10,7 +10,7 @@
             :class="{ on: index === currentIndex }"
             v-for="(item, index) in list"
             :key="item.key"
-            style="border-bottom: 1px solid green;"
+            style="border-bottom: 1px solid green"
           >
             <div style="padding-bottom: 30px">{{ item.name }}</div>
             <div :class="['menu_item_img', { on_img: index === currentIndex }]">
@@ -207,9 +207,13 @@ export default {
       const { tops, list } = this;
       let index = 0;
       // 5.3 找到分类的下标索引,实现联动左侧列表
-      index = tops.findIndex((top, index) => {
-        return scrollY >= top.c && scrollY < tops[index + 1].c;
+      index = tops.findIndex((top, i) => {
+        return (
+          scrollY >= top.c - localData.contentWrapperHeight / 2 &&
+          scrollY < tops[i + 1].c - localData.contentWrapperHeight / 2
+        );
       });
+      console.log("calcIndex", scrollY, index, localData.contentWrapperHeight);
 
       const bottomScrollY =
         localData.contentListHeight - localData.contentWrapperHeight;
@@ -222,6 +226,7 @@ export default {
 
     // 4 实现左边菜单点击联动右列表
     checkMenu(index) {
+      if (this.currentIndex === index) return;
       localData.clickEmit = true;
       this.currentIndex = index;
       const { tops } = this;
