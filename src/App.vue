@@ -10,8 +10,12 @@
             :class="{ on: index === currentIndex }"
             v-for="(item, index) in list"
             :key="item.key"
+            style="border-bottom: 1px solid green;"
           >
-            {{ item.name }}
+            <div style="padding-bottom: 30px">{{ item.name }}</div>
+            <div :class="['menu_item_img', { on_img: index === currentIndex }]">
+              <img :src="item.image" />
+            </div>
           </li>
         </ul>
       </div>
@@ -24,10 +28,8 @@
             :key="item.key"
           >
             <h3 class="title">{{ item.name }}</h3>
-            <ul class="content_list" :style="{ backgroundColor: item.color }">
-              {{
-                item.content
-              }}
+            <ul class="content_list">
+              <img class="content_list_img" :src="item.image" />
             </ul>
           </li>
         </ul>
@@ -58,28 +60,64 @@ export default {
     return {
       list: [
         {
+          key: "key0",
+          name: "第0章",
+          content: "第0章内容",
+          image: "/pdf/pdf_00.png",
+        },
+        {
           key: "key1",
           name: "第1章",
           content: "第1章内容",
-          color: "green",
+          image: "/pdf/pdf_01.png",
         },
         {
           key: "key2",
           name: "第2章",
           content: "第2章内容",
-          color: "blue",
+          image: "/pdf/pdf_02.png",
         },
         {
           key: "key3",
           name: "第3章",
           content: "第3章内容",
-          color: "yellow",
+          image: "/pdf/pdf_03.png",
         },
         {
           key: "key4",
           name: "第4章",
           content: "第4章内容",
-          color: "red",
+          image: "/pdf/pdf_04.png",
+        },
+        {
+          key: "key5",
+          name: "第5章",
+          content: "第5章内容",
+          image: "/pdf/pdf_05.png",
+        },
+        {
+          key: "key6",
+          name: "第6章",
+          content: "第6章内容",
+          image: "/pdf/pdf_06.png",
+        },
+        {
+          key: "key7",
+          name: "第7章",
+          content: "第7章内容",
+          image: "/pdf/pdf_07.png",
+        },
+        {
+          key: "key8",
+          name: "第8章",
+          content: "第8章内容",
+          image: "/pdf/pdf_08.png",
+        },
+        {
+          key: "key9",
+          name: "第9章",
+          content: "第9章内容",
+          image: "/pdf/pdf_09.png",
         },
       ],
       tops: [],
@@ -100,6 +138,7 @@ export default {
       // 初始化左边菜单滚动
       this.menuScroll = new Bscroll(".menu_wrapper", {
         click: true,
+        probeType: 3,
         mouseWheel: true,
         bounce: false,
       });
@@ -113,17 +152,19 @@ export default {
         mouseWheel: true,
         bounce: false,
       });
-      // 5.1 监听内容列表的滚动,得到实时滚动的位置
-      this.contentScroll.on("scroll", ({ x, y }) => {
+      this.menuScroll.on("scroll", ({ x, y }) => {
         const scrollY = Math.abs(y);
         this.scrollY = scrollY;
+      });
+      // 5.1 监听内容列表的滚动,得到实时滚动的位置
+      this.contentScroll.on("scroll", ({ x, y }) => {
+        if (localData.clickEmit) return;
+        const scrollY = Math.abs(y);
         this.calcIndex(scrollY);
-        if (localData.clickEmit === false) {
-          const my =
-            (scrollY * localData.menuListHeight) / localData.contentListHeight;
-          if (localData.menuListHeight - my > localData.menuWrapperHeight) {
-            this.menuScroll.scrollTo(0, -my, 300);
-          }
+        const my =
+          (scrollY * localData.menuListHeight) / localData.contentListHeight;
+        if (localData.menuListHeight - my > localData.menuWrapperHeight) {
+          this.menuScroll.scrollTo(0, -my, 300);
         }
       });
 
@@ -195,9 +236,9 @@ export default {
       const bottomScrollY =
         localData.contentListHeight - localData.contentWrapperHeight;
       if (bottomScrollY > scrollY) {
-        this.contentScroll.scrollTo(0, -scrollY, 0);
+        this.contentScroll.scrollTo(0, -scrollY, 300);
       } else {
-        this.contentScroll.scrollTo(0, -bottomScrollY, 0);
+        this.contentScroll.scrollTo(0, -bottomScrollY, 300);
       }
     },
   },
@@ -216,29 +257,42 @@ h3 {
 }
 ul,
 li {
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 #scroll-demo {
   height: 100vh;
   width: 100vw;
 }
+img {
+  height: 100%;
+}
 .scroll_wrapper {
   background-color: #ccc;
   display: flex;
-  height: 400px;
+  height: 100%;
   overflow: hidden;
   .menu_wrapper {
-    width: 100px;
+    width: 140px;
     .menu_list {
       .menu_item {
         width: 100px;
         height: 150px;
         text-align: center;
-        &.on {
-          background-color: #f1f3f4;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        padding: 20px;
+        .menu_item_img {
+          overflow: hidden;
+          &.on_img {
+            border: 2px solid red;
+          }
         }
+        // &.on {
+        //   background-color: red;
+        // }
       }
     }
   }
@@ -253,8 +307,15 @@ li {
           padding-left: 15px;
         }
         .content_list {
-          height: 400px;
+          height: 700px;
           background-color: #eee;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 20px;
+          .content_list_img {
+            height: 100%;
+          }
         }
       }
     }
