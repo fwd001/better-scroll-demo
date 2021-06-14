@@ -213,7 +213,6 @@ export default {
           scrollY < tops[i + 1].c - localData.contentWrapperHeight / 2
         );
       });
-      console.log("calcIndex", scrollY, index, localData.contentWrapperHeight);
 
       const bottomScrollY =
         localData.contentListHeight - localData.contentWrapperHeight;
@@ -256,6 +255,10 @@ body {
   margin: 0;
   padding: 0;
 }
+body {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
 h3 {
   margin: 0;
   padding: 0;
@@ -272,6 +275,7 @@ li {
 }
 img {
   height: 100%;
+  // width: 100%;
 }
 .scroll_wrapper {
   background-color: #ccc;
@@ -291,6 +295,8 @@ img {
         padding: 20px;
         .menu_item_img {
           overflow: hidden;
+          height: 100%;
+          width: 100%;
           &.on_img {
             border: 2px solid red;
           }
